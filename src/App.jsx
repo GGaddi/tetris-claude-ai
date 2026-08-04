@@ -13,6 +13,17 @@ export default function App() {
   useEffect(() => {
     function onKeyDown(e) {
       if (settingsOpen) return
+
+      if (e.code === 'Enter' || e.code === 'NumpadEnter') {
+        if (state.status === 'ready') {
+          e.preventDefault()
+          actions.start()
+        }
+        return
+      }
+
+      if (state.status === 'ready') return
+
       switch (e.code) {
         case 'ArrowLeft':
           e.preventDefault()
@@ -65,7 +76,7 @@ export default function App() {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
     }
-  }, [actions, settingsOpen])
+  }, [actions, settingsOpen, state.status])
 
   return (
     <div className="app">
@@ -114,9 +125,15 @@ export default function App() {
           </div>
 
           <div className="panel-actions">
-            <button className="btn primary" onClick={() => actions.togglePause()}>
-              {state.status === 'paused' ? 'Resume' : 'Pause'}
-            </button>
+            {state.status === 'ready' ? (
+              <button className="btn primary" onClick={() => actions.start()}>
+                Start
+              </button>
+            ) : (
+              <button className="btn primary" onClick={() => actions.togglePause()}>
+                {state.status === 'paused' ? 'Resume' : 'Pause'}
+              </button>
+            )}
             <button className="btn ghost" onClick={() => actions.restart()}>
               Restart
             </button>
@@ -126,6 +143,20 @@ export default function App() {
           </div>
         </aside>
       </main>
+
+      {state.status === 'ready' && (
+        <div className="start-overlay">
+          <div className="start-panel">
+            <h2>
+              DROP<span className="accent">//</span>
+            </h2>
+            <p>Press <kbd>Enter</kbd> or click Start to begin</p>
+            <button className="btn primary" onClick={() => actions.start()}>
+              Start
+            </button>
+          </div>
+        </div>
+      )}
 
       {settingsOpen && (
         <SettingsPanel

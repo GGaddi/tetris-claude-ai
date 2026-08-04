@@ -19,7 +19,10 @@ function spawnFromQueue(state) {
   return { ...state, current, queue, canHold: true, status: gameOver ? 'gameover' : state.status }
 }
 
-function initialState(settings) {
+// `autoStart` controls whether the board comes up already playing (used on
+// restart / after applying new settings) or waits on a "ready" screen for
+// the player to press Start / Enter (used for the very first load).
+function initialState(settings, autoStart = false) {
   const board = createEmptyBoard(settings.boardWidth, settings.boardHeight)
   let state = {
     settings,
@@ -31,7 +34,7 @@ function initialState(settings) {
     score: 0,
     lines: 0,
     level: settings.startingLevel,
-    status: 'playing',
+    status: autoStart ? 'playing' : 'ready',
     lastClear: null,
   }
   state = spawnFromQueue(state)
@@ -118,6 +121,9 @@ function holdPiece(state) {
 
 function reducer(state, action) {
   switch (action.type) {
+    case 'START':
+      if (state.status === 'ready') return { ...state, status: 'playing' }
+      return state
     case 'MOVE_LEFT':
       return tryMove(state, -1, 0)
     case 'MOVE_RIGHT':
@@ -148,16 +154,16 @@ function reducer(state, action) {
       if (state.status === 'paused') return { ...state, status: 'playing' }
       return state
     case 'RESTART':
-      return initialState(action.settings)
+      return initialState(action.settings, true)
     case 'UPDATE_SETTINGS':
-      return initialState(action.settings)
+      return initialState(action.settings, true)
     default:
       return state
   }
 }
 
 export function useTetris(initialSettings) {
-  const [state, dispatch] = useReducer(reducer, initialSettings, initialState)
+  const [state, dispatch] = useReducer(reducer, initialSettings, (settings) => initialState(settings, false))
   const settings = state.settings
   const dropInterval = useMemo(() => computeDropInterval(state.level, settings), [state.level, settings])
   const softDropInterval = Math.max(20, Math.round(dropInterval / settings.softDropMultiplier))
@@ -184,6 +190,7 @@ export function useTetris(initialSettings) {
   const togglePause = useCallback(() => dispatch({ type: 'PAUSE' }), [])
   const restart = useCallback((newSettings) => dispatch({ type: 'RESTART', settings: newSettings || settings }), [settings])
   const updateSettings = useCallback((newSettings) => dispatch({ type: 'UPDATE_SETTINGS', settings: newSettings }), [])
+  const start = useCallback(() => dispatch({ type: 'START' }), [])
 
   const ghostY = useMemo(() => {
     if (!state.current || !settings.ghostPieceEnabled) return null
@@ -196,6 +203,6 @@ export function useTetris(initialSettings) {
     state,
     ghostY,
     nextTypes,
-    actions: { move, rotate, softDrop, hardDrop: hardDrop_, hold, togglePause, restart, updateSettings },
+    actions: { move, rotate, softDrop, hardDrop: hardDrop_, hold, togglePause, restart, updateSettings, start },
   }
 }
