@@ -125,11 +125,17 @@ export default function App() {
           </div>
 
           <div className="panel-actions">
-            {state.status === 'ready' ? (
+            {state.status === 'ready' && (
               <button className="btn primary" onClick={() => actions.start()}>
                 Start
               </button>
-            ) : (
+            )}
+            {state.status === 'countdown' && (
+              <button className="btn primary" disabled>
+                Starting in {state.countdown}&hellip;
+              </button>
+            )}
+            {(state.status === 'playing' || state.status === 'paused' || state.status === 'gameover') && (
               <button className="btn primary" onClick={() => actions.togglePause()}>
                 {state.status === 'paused' ? 'Resume' : 'Pause'}
               </button>
@@ -154,6 +160,14 @@ export default function App() {
             <button className="btn primary" onClick={() => actions.start()}>
               Start
             </button>
+          </div>
+        </div>
+      )}
+
+      {state.status === 'countdown' && (
+        <div className="start-overlay">
+          <div className="countdown-number" key={state.countdown}>
+            {state.countdown}
           </div>
         </div>
       )}

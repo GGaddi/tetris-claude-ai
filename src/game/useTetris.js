@@ -19,9 +19,12 @@ function spawnFromQueue(state) {
   return { ...state, current, queue, canHold: true, status: gameOver ? 'gameover' : state.status }
 }
 
-// `autoStart` controls whether the board comes up already playing (used on
-// restart / after applying new settings) or waits on a "ready" screen for
-// the player to press Start / Enter (used for the very first load).
+const COUNTDOWN_START = 3
+
+// `autoStart` controls whether the board comes up already playing (used
+// after applying new settings from the Rules panel) or waits on a "ready"
+// screen for the player to press Start / Enter (used for the very first
+// load and whenever Restart is pressed).
 function initialState(settings, autoStart = false) {
   const board = createEmptyBoard(settings.boardWidth, settings.boardHeight)
   let state = {
@@ -35,6 +38,7 @@ function initialState(settings, autoStart = false) {
     lines: 0,
     level: settings.startingLevel,
     status: autoStart ? 'playing' : 'ready',
+    countdown: null,
     lastClear: null,
   }
   state = spawnFromQueue(state)
@@ -122,8 +126,14 @@ function holdPiece(state) {
 function reducer(state, action) {
   switch (action.type) {
     case 'START':
-      if (state.status === 'ready') return { ...state, status: 'playing' }
+      if (state.status === 'ready') return { ...state, status: 'countdown', countdown: COUNTDOWN_START }
       return state
+    case 'COUNTDOWN_TICK': {
+      if (state.status !== 'countdown') return state
+      const remaining = state.countdown - 1
+      if (remaining <= 0) return { ...state, status: 'playing', countdown: null }
+      return { ...state, countdown: remaining }
+    }
     case 'MOVE_LEFT':
       return tryMove(state, -1, 0)
     case 'MOVE_RIGHT':
@@ -154,7 +164,7 @@ function reducer(state, action) {
       if (state.status === 'paused') return { ...state, status: 'playing' }
       return state
     case 'RESTART':
-      return initialState(action.settings, true)
+      return initialState(action.settings, false)
     case 'UPDATE_SETTINGS':
       return initialState(action.settings, true)
     default:
@@ -178,6 +188,13 @@ export function useTetris(initialSettings) {
     return () => clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.status, state.level, state.current?.type, softDropHeld.current])
+
+  // Pre-game countdown, ticks once per second down to 0 then flips to 'playing'
+  useEffect(() => {
+    if (state.status !== 'countdown') return undefined
+    const id = setInterval(() => dispatch({ type: 'COUNTDOWN_TICK' }), 1000)
+    return () => clearInterval(id)
+  }, [state.status])
 
   const move = useCallback((dir) => dispatch({ type: dir === -1 ? 'MOVE_LEFT' : 'MOVE_RIGHT' }), [])
   const rotate = useCallback((dir = 1) => dispatch({ type: dir === 1 ? 'ROTATE_CW' : 'ROTATE_CCW' }), [])
