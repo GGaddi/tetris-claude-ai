@@ -21,10 +21,11 @@ function spawnFromQueue(state) {
 
 const COUNTDOWN_START = 3
 
-// `autoStart` controls whether the board comes up already playing (used
-// after applying new settings from the Rules panel) or waits on a "ready"
-// screen for the player to press Start / Enter (used for the very first
-// load and whenever Restart is pressed).
+// `autoStart` controls whether the board comes up already playing or waits
+// on a "ready" screen for the player to press Start / Enter. Every current
+// caller (first load, Restart, Apply & restart) passes false so the player
+// always lands back on the start screen; the flag is kept in case a future
+// caller wants to skip it.
 function initialState(settings, autoStart = false) {
   const board = createEmptyBoard(settings.boardWidth, settings.boardHeight)
   let state = {
@@ -166,7 +167,7 @@ function reducer(state, action) {
     case 'RESTART':
       return initialState(action.settings, false)
     case 'UPDATE_SETTINGS':
-      return initialState(action.settings, true)
+      return initialState(action.settings, false)
     default:
       return state
   }
