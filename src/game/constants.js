@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS = {
   ghostPieceEnabled: true,
   holdEnabled: true,
   nextPieceCount: 3,
+  music: 'korobeiniki', // 'none' | any key in MUSIC_TRACKS (see game/audio.js)
   scoring: {
     single: 100,
     double: 300,

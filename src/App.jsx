@@ -1,14 +1,49 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTetris } from './game/useTetris'
 import { DEFAULT_SETTINGS } from './game/constants'
+import { musicEngine, announceClear } from './game/audio'
 import Board from './components/Board'
 import PiecePreview from './components/PiecePreview'
 import StatusPanel from './components/StatusPanel'
 import SettingsPanel from './components/SettingsPanel'
+import MusicControl from './components/MusicControl'
 
 export default function App() {
   const { state, ghostY, nextTypes, actions } = useTetris(DEFAULT_SETTINGS)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [musicMuted, setMusicMuted] = useState(false)
+  const [musicVolume, setMusicVolume] = useState(0.5)
+  const lastAnnouncedRef = useRef(null)
+
+  // Keep the audio engine's track selection, volume, and mute state in
+  // sync with React state (the engine itself is a plain JS singleton, not
+  // React-managed, since Web Audio nodes aren't something React renders).
+  useEffect(() => {
+    musicEngine.setTrack(state.settings.music)
+  }, [state.settings.music])
+
+  useEffect(() => {
+    musicEngine.setVolume(musicVolume)
+  }, [musicVolume])
+
+  useEffect(() => {
+    musicEngine.setMuted(musicMuted)
+  }, [musicMuted])
+
+  // Announce every new line clear with a spoken "single/double/triple/tetris".
+  useEffect(() => {
+    if (state.lastClear && state.lastClear !== lastAnnouncedRef.current) {
+      lastAnnouncedRef.current = state.lastClear
+      announceClear(state.lastClear.label, { muted: musicMuted, volume: musicVolume })
+    }
+  }, [state.lastClear, musicMuted, musicVolume])
+
+  // Browsers require a user gesture before audio can play, so kick off
+  // (or resume) music from the same click/keypress that starts the game.
+  function handleStart() {
+    musicEngine.start()
+    actions.start()
+  }
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -17,7 +52,7 @@ export default function App() {
       if (e.code === 'Enter' || e.code === 'NumpadEnter') {
         if (state.status === 'ready') {
           e.preventDefault()
-          actions.start()
+          handleStart()
         }
         return
       }
@@ -80,6 +115,13 @@ export default function App() {
 
   return (
     <div className="app">
+      <MusicControl
+        muted={musicMuted}
+        volume={musicVolume}
+        onToggleMute={() => setMusicMuted((m) => !m)}
+        onVolumeChange={setMusicVolume}
+      />
+
       <header className="app-header">
         <h1>
           DROP<span className="accent">//</span>
@@ -126,7 +168,7 @@ export default function App() {
 
           <div className="panel-actions">
             {state.status === 'ready' && (
-              <button className="btn primary" onClick={() => actions.start()}>
+              <button className="btn primary" onClick={handleStart}>
                 Start
               </button>
             )}
@@ -157,7 +199,7 @@ export default function App() {
               DROP<span className="accent">//</span>
             </h2>
             <p>Press <kbd>Enter</kbd> or click Start to begin</p>
-            <button className="btn primary" onClick={() => actions.start()}>
+            <button className="btn primary" onClick={handleStart}>
               Start
             </button>
           </div>

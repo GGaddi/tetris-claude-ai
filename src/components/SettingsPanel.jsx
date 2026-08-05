@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { SETTINGS_LIMITS } from '../game/constants'
+import { MUSIC_TRACKS } from '../game/audio'
 
 const FIELD_LABELS = {
   boardWidth: 'Board width',
@@ -54,6 +55,18 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
             >
               <option value="bag">7-bag (fair)</option>
               <option value="random">Fully random</option>
+            </select>
+          </label>
+
+          <label className="settings-field">
+            <span>Music</span>
+            <select value={draft.music} onChange={(e) => setField('music', e.target.value)}>
+              <option value="none">None</option>
+              {Object.entries(MUSIC_TRACKS).map(([id, track]) => (
+                <option key={id} value={id}>
+                  {track.label}
+                </option>
+              ))}
             </select>
           </label>
 
