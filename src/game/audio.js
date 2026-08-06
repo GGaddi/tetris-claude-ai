@@ -93,17 +93,20 @@ export const MUSIC_TRACKS = {
 
 class MusicEngine {
   constructor() {
+    this.ctx = null
     this.gainNode = null
     this.trackId = 'none'
     this.volume = 0.5
     this.muted = false
     this.playing = false
     this.timeoutId = null
+    this.activeNodes = [] // every oscillator/gain scheduled for the current pass
   }
 
   ensureGain() {
     const ctx = getContext()
     if (!ctx) return null
+    this.ctx = ctx
     if (!this.gainNode) {
       this.gainNode = ctx.createGain()
       this.gainNode.gain.value = this.muted ? 0 : this.volume
@@ -151,14 +154,40 @@ class MusicEngine {
     this._scheduleLoop(ctx, MUSIC_TRACKS[this.trackId])
   }
 
-  // Stops playback outright (not just muting). Calling start() again
-  // replays the track from its beginning.
+  // Stops playback outright and immediately — including every note that
+  // was already scheduled ahead of time for the rest of the current pass
+  // (an entire melody+bass pass is scheduled up front, so just clearing
+  // the next-pass timer isn't enough; it would let the current pass ring
+  // out to its end). Calling start() again replays the track from the top.
   stop() {
     this.playing = false
     if (this.timeoutId) {
       clearTimeout(this.timeoutId)
       this.timeoutId = null
     }
+    this._silenceActiveNodes()
+  }
+
+  _silenceActiveNodes() {
+    const ctx = this.ctx
+    const now = ctx ? ctx.currentTime : null
+    this.activeNodes.forEach(({ osc, gain }) => {
+      try {
+        if (now !== null) {
+          // Ramp to silence over ~15ms instead of cutting instantly, to
+          // avoid an audible click, then stop the oscillator right after.
+          gain.gain.cancelScheduledValues(now)
+          gain.gain.setValueAtTime(gain.gain.value, now)
+          gain.gain.linearRampToValueAtTime(0, now + 0.015)
+          osc.stop(now + 0.02)
+        } else {
+          osc.stop()
+        }
+      } catch {
+        // Already stopped/ended — nothing to do.
+      }
+    })
+    this.activeNodes = []
   }
 
   _playNote(ctx, freq, startTime, duration, type, gainScale) {
@@ -172,6 +201,12 @@ class MusicEngine {
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.95)
     osc.connect(gain)
     gain.connect(this.gainNode)
+    const node = { osc, gain }
+    this.activeNodes.push(node)
+    osc.onended = () => {
+      const i = this.activeNodes.indexOf(node)
+      if (i !== -1) this.activeNodes.splice(i, 1)
+    }
     osc.start(startTime)
     osc.stop(startTime + duration)
   }
