@@ -75,6 +75,10 @@ body {
   gap: 18px;
 }
 
+.panel.right {
+  width: 260px;
+}
+
 .board-wrap {
   padding: 10px;
   background: var(--bg-raised);
@@ -464,24 +468,37 @@ kbd {
   border-color: var(--line);
 }
 
-.music-control {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 20;
+.status-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.status-row .status-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.audio-controls {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.volume-control {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: var(--bg-panel);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 10px 8px 16px;
+  padding: 8px 6px 12px;
 }
 
 .music-icon-btn {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -503,8 +520,8 @@ kbd {
 }
 
 .volume-slider-wrap {
-  width: 24px;
-  height: 90px;
+  width: 20px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -512,7 +529,7 @@ kbd {
 }
 
 .volume-slider {
-  width: 90px;
+  width: 70px;
   transform: rotate(-90deg);
   accent-color: var(--accent);
   cursor: pointer;
@@ -536,16 +553,9 @@ kbd {
   .panel.left,
   .panel.right {
     flex-direction: column;
+    width: min(340px, 90vw);
   }
-  .music-control {
-    top: 12px;
-    right: 12px;
-    padding: 8px 6px 12px;
-  }
-  .volume-slider-wrap {
-    height: 70px;
-  }
-  .volume-slider {
-    width: 70px;
+  .status-row {
+    width: 100%;
   }
 }

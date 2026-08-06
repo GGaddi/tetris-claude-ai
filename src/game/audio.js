@@ -1,7 +1,24 @@
 // Self-contained game audio: a tiny Web Audio synthesizer for background
-// music, plus a speech-synthesis based line-clear announcer. Everything
-// here is generated in the browser — no audio files are loaded, so it
-// works fully offline and has no network or npm-install dependency.
+// music and short game sound effects, plus a speech-synthesis based
+// line-clear announcer. Everything here is generated in the browser — no
+// audio files are loaded, so it works fully offline with no network or
+// npm-install dependency.
+//
+// Music and "everything else" (announcer voice + game sound effects) are
+// deliberately kept on two independent gain channels sharing one
+// AudioContext, so the player can mix/mute them separately.
+
+let sharedCtx = null
+
+function getContext() {
+  if (!sharedCtx) {
+    const Ctx = window.AudioContext || window.webkitAudioContext
+    if (!Ctx) return null
+    sharedCtx = new Ctx()
+  }
+  if (sharedCtx.state === 'suspended') sharedCtx.resume()
+  return sharedCtx
+}
 
 const NOTE_FREQUENCIES = {
   C: 261.63,
@@ -72,10 +89,11 @@ export const MUSIC_TRACKS = {
   },
 }
 
+// --- Background music channel -----------------------------------------------
+
 class MusicEngine {
   constructor() {
-    this.ctx = null
-    this.masterGain = null
+    this.gainNode = null
     this.trackId = 'none'
     this.volume = 0.5
     this.muted = false
@@ -83,27 +101,25 @@ class MusicEngine {
     this.timeoutId = null
   }
 
-  ensureContext() {
-    if (!this.ctx) {
-      const Ctx = window.AudioContext || window.webkitAudioContext
-      if (!Ctx) return null
-      this.ctx = new Ctx()
-      this.masterGain = this.ctx.createGain()
-      this.masterGain.gain.value = this.muted ? 0 : this.volume
-      this.masterGain.connect(this.ctx.destination)
+  ensureGain() {
+    const ctx = getContext()
+    if (!ctx) return null
+    if (!this.gainNode) {
+      this.gainNode = ctx.createGain()
+      this.gainNode.gain.value = this.muted ? 0 : this.volume
+      this.gainNode.connect(ctx.destination)
     }
-    if (this.ctx.state === 'suspended') this.ctx.resume()
-    return this.ctx
+    return ctx
   }
 
   setVolume(v) {
     this.volume = v
-    if (this.masterGain) this.masterGain.gain.value = this.muted ? 0 : v
+    if (this.gainNode) this.gainNode.gain.value = this.muted ? 0 : v
   }
 
   setMuted(muted) {
     this.muted = muted
-    if (this.masterGain) this.masterGain.gain.value = muted ? 0 : this.volume
+    if (this.gainNode) this.gainNode.gain.value = muted ? 0 : this.volume
   }
 
   setTrack(trackId) {
@@ -116,16 +132,20 @@ class MusicEngine {
     }
   }
 
-  // Must be called from a user-gesture handler (browsers block audio
-  // otherwise). Safe to call repeatedly — it no-ops if already playing.
+  // Must be called from (or shortly after) a user-gesture handler —
+  // browsers block audio otherwise. Safe to call repeatedly; it no-ops if
+  // already playing or the selected track is 'none'.
   start() {
     if (this.playing) return
     if (this.trackId === 'none' || !MUSIC_TRACKS[this.trackId]) return
-    if (!this.ensureContext()) return
+    const ctx = this.ensureGain()
+    if (!ctx) return
     this.playing = true
-    this._scheduleLoop(MUSIC_TRACKS[this.trackId])
+    this._scheduleLoop(ctx, MUSIC_TRACKS[this.trackId])
   }
 
+  // Stops playback outright (not just muting). Calling start() again
+  // replays the track from its beginning.
   stop() {
     this.playing = false
     if (this.timeoutId) {
@@ -134,9 +154,8 @@ class MusicEngine {
     }
   }
 
-  _playNote(freq, startTime, duration, type, gainScale) {
+  _playNote(ctx, freq, startTime, duration, type, gainScale) {
     if (!freq) return
-    const ctx = this.ctx
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.type = type
@@ -145,31 +164,31 @@ class MusicEngine {
     gain.gain.linearRampToValueAtTime(0.22 * gainScale, startTime + 0.02)
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.95)
     osc.connect(gain)
-    gain.connect(this.masterGain)
+    gain.connect(this.gainNode)
     osc.start(startTime)
     osc.stop(startTime + duration)
   }
 
-  _scheduleLoop(track) {
+  _scheduleLoop(ctx, track) {
     const beatSeconds = 60 / track.tempo
     const totalBeats = track.melody.reduce((sum, [, beats]) => sum + beats, 0)
     const totalDuration = totalBeats * beatSeconds
 
     const playPass = () => {
       if (!this.playing) return
-      const startAt = this.ctx.currentTime + 0.05
+      const startAt = ctx.currentTime + 0.05
 
       let t = startAt
       track.melody.forEach(([note, beats]) => {
         const duration = beats * beatSeconds
-        this._playNote(noteToFrequency(note), t, duration, 'square', 1)
+        this._playNote(ctx, noteToFrequency(note), t, duration, 'square', 1)
         t += duration
       })
 
       let bt = startAt
       ;(track.bass || []).forEach(([note, beats]) => {
         const duration = beats * beatSeconds
-        this._playNote(noteToFrequency(note), bt, duration, 'triangle', 0.8)
+        this._playNote(ctx, noteToFrequency(note), bt, duration, 'triangle', 0.8)
         bt += duration
       })
 
@@ -182,7 +201,87 @@ class MusicEngine {
 
 export const musicEngine = new MusicEngine()
 
-// --- Line-clear voice announcer --------------------------------------------
+// --- Announcer + game sound-effects channel ---------------------------------
+
+class SfxEngine {
+  constructor() {
+    this.gainNode = null
+    this.volume = 0.6
+    this.muted = false
+  }
+
+  ensureGain() {
+    const ctx = getContext()
+    if (!ctx) return null
+    if (!this.gainNode) {
+      this.gainNode = ctx.createGain()
+      this.gainNode.gain.value = this.muted ? 0 : this.volume
+      this.gainNode.connect(ctx.destination)
+    }
+    return ctx
+  }
+
+  setVolume(v) {
+    this.volume = v
+    if (this.gainNode) this.gainNode.gain.value = this.muted ? 0 : v
+  }
+
+  setMuted(muted) {
+    this.muted = muted
+    if (this.gainNode) this.gainNode.gain.value = muted ? 0 : this.volume
+  }
+
+  // Effective 0-1 volume for non-Web-Audio sounds (e.g. SpeechSynthesis),
+  // which don't route through gainNode and so need their volume applied
+  // manually.
+  get effectiveVolume() {
+    return this.muted ? 0 : this.volume
+  }
+
+  _blip(freq, startDelay, duration, type) {
+    const ctx = this.ensureGain()
+    if (!ctx) return
+    const t0 = ctx.currentTime + startDelay
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = type
+    osc.frequency.setValueAtTime(freq, t0)
+    gain.gain.setValueAtTime(0.0001, t0)
+    gain.gain.linearRampToValueAtTime(0.3, t0 + 0.01)
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration)
+    osc.connect(gain)
+    gain.connect(this.gainNode)
+    osc.start(t0)
+    osc.stop(t0 + duration)
+  }
+
+  playHardDrop() {
+    const ctx = this.ensureGain()
+    if (!ctx) return
+    const t0 = ctx.currentTime
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(200, t0)
+    osc.frequency.exponentialRampToValueAtTime(55, t0 + 0.12)
+    gain.gain.setValueAtTime(0.0001, t0)
+    gain.gain.linearRampToValueAtTime(0.35, t0 + 0.01)
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16)
+    osc.connect(gain)
+    gain.connect(this.gainNode)
+    osc.start(t0)
+    osc.stop(t0 + 0.16)
+  }
+
+  playGameOver() {
+    const notes = [392.0, 349.23, 293.66, 261.63] // G4, F4, D4, C4 — descending
+    notes.forEach((freq, i) => this._blip(freq, i * 0.18, 0.28, 'square'))
+  }
+}
+
+export const sfxEngine = new SfxEngine()
+
+// --- Line-clear voice announcer ---------------------------------------------
 
 let cachedVoice = null
 
@@ -204,15 +303,33 @@ if (typeof window !== 'undefined' && window.speechSynthesis) {
   }
 }
 
-export function announceClear(label, { muted = false, volume = 1 } = {}) {
-  if (muted || !label) return
+// Pitch/rate ramp up with how many lines were cleared, so a Tetris sounds
+// noticeably more excited than a single.
+const ANNOUNCE_ENERGY = {
+  1: { pitch: 1.15, rate: 1.05 },
+  2: { pitch: 1.25, rate: 1.12 },
+  3: { pitch: 1.35, rate: 1.2 },
+  4: { pitch: 1.5, rate: 1.3 },
+}
+
+// `clear` is { count, label } (see useTetris's lastClear). Volume/muted
+// come from the SFX channel, independent of the music channel.
+export function announceClear(clear, { muted = false, volume = 1 } = {}) {
+  if (muted || !clear || !clear.label) return
   if (typeof window === 'undefined' || !window.speechSynthesis) return
-  const utterance = new SpeechSynthesisUtterance(label.toUpperCase())
+  const energy = ANNOUNCE_ENERGY[clear.count] || ANNOUNCE_ENERGY[1]
+  const utterance = new SpeechSynthesisUtterance(`${clear.label.toUpperCase()}!`)
   const voice = pickFemaleVoice()
   if (voice) utterance.voice = voice
-  utterance.pitch = 1.15
-  utterance.rate = 1.05
+  utterance.pitch = Math.min(2, energy.pitch)
+  utterance.rate = energy.rate
   utterance.volume = Math.max(0, Math.min(1, volume))
   window.speechSynthesis.cancel() // don't let announcements stack up
   window.speechSynthesis.speak(utterance)
+}
+
+export function cancelAnnouncement() {
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
+    window.speechSynthesis.cancel()
+  }
 }
