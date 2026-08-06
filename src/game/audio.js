@@ -122,14 +122,21 @@ class MusicEngine {
     if (this.gainNode) this.gainNode.gain.value = muted ? 0 : this.volume
   }
 
+  // Every place that changes the selected track also resets the game back
+  // to the 'ready' status first, which already stops music via the
+  // status-transition effect in App.jsx — so this just needs to update
+  // which track will play next time start() is called.
   setTrack(trackId) {
-    if (trackId === this.trackId) return
-    const wasPlaying = this.playing
     this.trackId = trackId
-    if (wasPlaying) {
-      this.stop()
-      this.start()
-    }
+  }
+
+  // Primes (creates/resumes) the shared AudioContext from a real user
+  // gesture (e.g. clicking Start) without actually starting playback.
+  // Browsers block audio that isn't tied to a gesture, so calling this
+  // early means the later programmatic start() — fired once the pre-game
+  // countdown finishes, not from a gesture — is allowed to make sound.
+  unlock() {
+    this.ensureGain()
   }
 
   // Must be called from (or shortly after) a user-gesture handler —

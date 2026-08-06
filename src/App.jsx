@@ -61,36 +61,40 @@ export default function App() {
     }
   }, [state.status, sfxMuted])
 
-  // Pausing temporarily stops music playback and cancels any in-flight
-  // announcement; unpausing (or leaving pause any other way) resumes music
-  // from the top of the current track.
+  // Music only ever plays during actual gameplay. It stops outright (not
+  // just muted) any time we land back on the start screen — fresh load,
+  // Restart, or applying new rules — or when the game is paused, and only
+  // (re)starts once the status becomes 'playing'. That means it starts
+  // when the pre-game countdown finishes, not when the countdown begins,
+  // and restarts from the top of the (possibly newly-selected) track each
+  // time gameplay begins.
   useEffect(() => {
     const prev = prevStatusRef.current
-    if (state.status === 'paused' && prev !== 'paused') {
-      musicEngine.stop()
-      cancelAnnouncement()
-    } else if (prev === 'paused' && state.status !== 'paused') {
-      musicEngine.start()
+    if (state.status !== prev) {
+      if (state.status === 'ready' || state.status === 'paused') {
+        musicEngine.stop()
+        cancelAnnouncement()
+      } else if (state.status === 'playing' && prev !== 'playing') {
+        musicEngine.start()
+      }
+      prevStatusRef.current = state.status
     }
-    prevStatusRef.current = state.status
   }, [state.status])
 
-  // Browsers require a user gesture before audio can play, so kick off
-  // (or resume) music from the same click/keypress that starts the game.
+  // Browsers require a user gesture before audio can play. Pressing Start
+  // only primes (unlocks) the audio context here — actual music playback
+  // begins once the countdown finishes and the status-transition effect
+  // above sees 'playing'.
   function handleStart() {
-    musicEngine.start()
+    musicEngine.unlock()
     actions.start()
   }
 
-  // Applying rule changes stops whatever's currently playing and restarts
-  // music fresh, based on whichever track is selected in the new settings
-  // (this click is itself a user gesture, so it's safe to start audio here
-  // even before the player has pressed Start for the very first time).
+  // Applying rule changes resets the game back to the 'ready' status,
+  // which the effect above already reacts to by stopping music. The next
+  // time gameplay starts, it'll play whichever track is now selected.
   function handleApplySettings(newSettings) {
-    musicEngine.stop()
     actions.updateSettings(newSettings)
-    musicEngine.setTrack(newSettings.music)
-    musicEngine.start()
   }
 
   useEffect(() => {
