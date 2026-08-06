@@ -319,6 +319,29 @@ class SfxEngine {
     const notes = [392.0, 349.23, 293.66, 261.63] // G4, F4, D4, C4 — descending
     notes.forEach((freq, i) => this._blip(freq, i * 0.18, 0.28, 'square'))
   }
+
+  // Short original ascending arpeggio "sting" that plays alongside the
+  // announcer voice on a line clear — more notes and a tighter, brighter
+  // run the bigger the clear, for extra arcade-style celebration.
+  playClearFanfare(count) {
+    const notes = FANFARE_NOTES[count] || FANFARE_NOTES[1]
+    const gap = count >= 4 ? 0.06 : 0.09
+    notes.forEach((note, i) => {
+      this._blip(noteToFrequency(note), i * gap, 0.2, 'square')
+    })
+    if (count >= 4) {
+      // Tetris gets an extra triumphant chord stab on top of the run.
+      const chord = ['C6', 'E6', 'G6']
+      chord.forEach((note) => this._blip(noteToFrequency(note), notes.length * gap + 0.02, 0.4, 'triangle'))
+    }
+  }
+}
+
+const FANFARE_NOTES = {
+  1: ['C5', 'E5'],
+  2: ['C5', 'E5', 'G5'],
+  3: ['C5', 'E5', 'G5', 'C6'],
+  4: ['C5', 'E5', 'G5', 'C6', 'E6'],
 }
 
 export const sfxEngine = new SfxEngine()
@@ -346,12 +369,13 @@ if (typeof window !== 'undefined' && window.speechSynthesis) {
 }
 
 // Pitch/rate ramp up with how many lines were cleared, so a Tetris sounds
-// noticeably more excited than a single.
+// noticeably more excited than a single — pushed up further for a hyped,
+// arcade-announcer energy.
 const ANNOUNCE_ENERGY = {
-  1: { pitch: 1.15, rate: 1.05 },
-  2: { pitch: 1.25, rate: 1.12 },
-  3: { pitch: 1.35, rate: 1.2 },
-  4: { pitch: 1.5, rate: 1.3 },
+  1: { pitch: 1.3, rate: 1.15 },
+  2: { pitch: 1.45, rate: 1.22 },
+  3: { pitch: 1.6, rate: 1.3 },
+  4: { pitch: 1.85, rate: 1.42 },
 }
 
 // `clear` is { count, label } (see useTetris's lastClear). Volume/muted
@@ -360,7 +384,8 @@ export function announceClear(clear, { muted = false, volume = 1 } = {}) {
   if (muted || !clear || !clear.label) return
   if (typeof window === 'undefined' || !window.speechSynthesis) return
   const energy = ANNOUNCE_ENERGY[clear.count] || ANNOUNCE_ENERGY[1]
-  const utterance = new SpeechSynthesisUtterance(`${clear.label.toUpperCase()}!`)
+  const text = clear.count >= 4 ? `${clear.label.toUpperCase()}!!` : `${clear.label.toUpperCase()}!`
+  const utterance = new SpeechSynthesisUtterance(text)
   const voice = pickFemaleVoice()
   if (voice) utterance.voice = voice
   utterance.pitch = Math.min(2, energy.pitch)

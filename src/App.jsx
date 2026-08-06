@@ -42,11 +42,13 @@ export default function App() {
     sfxEngine.setMuted(sfxMuted)
   }, [sfxMuted])
 
-  // Announce every new line clear with a spoken "single/double/triple/tetris".
+  // Announce every new line clear with a spoken "single/double/triple/tetris"
+  // plus a short original arcade-style fanfare that scales with clear size.
   useEffect(() => {
     if (state.lastClear && state.lastClear !== lastAnnouncedRef.current) {
       lastAnnouncedRef.current = state.lastClear
       announceClear(state.lastClear, { muted: sfxMuted, volume: sfxVolume })
+      if (!sfxMuted) sfxEngine.playClearFanfare(state.lastClear.count)
     }
   }, [state.lastClear, sfxMuted, sfxVolume])
 
