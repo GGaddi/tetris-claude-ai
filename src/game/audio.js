@@ -362,9 +362,28 @@ class SfxEngine {
     osc.stop(t0 + 0.16)
   }
 
+  // A short descending phrase followed by a low sustained note — a
+  // self-contained "that's it" cadence, since it plays as the only sound
+  // once the music has been stopped for game over.
   playGameOver() {
+    const ctx = this.ensureGain()
+    if (!ctx) return
     const notes = [392.0, 349.23, 293.66, 261.63] // G4, F4, D4, C4 — descending
-    notes.forEach((freq, i) => this._blip(freq, i * 0.18, 0.28, 'square'))
+    notes.forEach((freq, i) => this._blip(freq, i * 0.18, 0.3, 'square'))
+
+    const finalDelay = notes.length * 0.18 + 0.05
+    const t0 = ctx.currentTime + finalDelay
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(130.81, t0) // C3
+    gain.gain.setValueAtTime(0.0001, t0)
+    gain.gain.linearRampToValueAtTime(0.35, t0 + 0.03)
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 1.1)
+    osc.connect(gain)
+    gain.connect(this.gainNode)
+    osc.start(t0)
+    osc.stop(t0 + 1.1)
   }
 
   // Short original ascending arpeggio "sting" that plays alongside the

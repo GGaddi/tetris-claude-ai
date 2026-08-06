@@ -18,6 +18,7 @@ export default function App() {
   const lastAnnouncedRef = useRef(null)
   const gameOverAnnouncedRef = useRef(false)
   const prevStatusRef = useRef(state.status)
+  const lastLockSeqRef = useRef(state.lockSeq)
 
   // Keep the audio engine's track selection, volume, and mute state in
   // sync with React state (the engines themselves are plain JS singletons,
@@ -52,6 +53,16 @@ export default function App() {
     }
   }, [state.lastClear, sfxMuted, sfxVolume])
 
+  // Play the same "thud" sound on every piece lock — whether the piece
+  // landed from ordinary gravity or was hard-dropped. useTetris bumps
+  // lockSeq exactly once per lock, so this fires uniformly for both.
+  useEffect(() => {
+    if (state.lockSeq !== lastLockSeqRef.current) {
+      lastLockSeqRef.current = state.lockSeq
+      if (!sfxMuted) sfxEngine.playHardDrop()
+    }
+  }, [state.lockSeq, sfxMuted])
+
   // Game-over sting, played once per game-over.
   useEffect(() => {
     if (state.status === 'gameover' && !gameOverAnnouncedRef.current) {
@@ -64,16 +75,18 @@ export default function App() {
   }, [state.status, sfxMuted])
 
   // Music only ever plays during actual gameplay. It stops outright (not
-  // just muted) any time we land back on the start screen — fresh load,
-  // Restart, or applying new rules — or when the game is paused, and only
-  // (re)starts once the status becomes 'playing'. That means it starts
-  // when the pre-game countdown finishes, not when the countdown begins,
-  // and restarts from the top of the (possibly newly-selected) track each
-  // time gameplay begins.
+  // just muted) any time we leave active play — back to the start screen
+  // (fresh load, Restart, or applying new rules), paused, or game over —
+  // and only (re)starts once the status becomes 'playing'. That means it
+  // starts when the pre-game countdown finishes, not when the countdown
+  // begins, and restarts from the top of the (possibly newly-selected)
+  // track each time gameplay begins. On game over specifically, cutting
+  // the music lets the game-over sting (above) stand on its own instead
+  // of playing underneath the loop.
   useEffect(() => {
     const prev = prevStatusRef.current
     if (state.status !== prev) {
-      if (state.status === 'ready' || state.status === 'paused') {
+      if (state.status === 'ready' || state.status === 'paused' || state.status === 'gameover') {
         musicEngine.stop()
         cancelAnnouncement()
       } else if (state.status === 'playing' && prev !== 'playing') {
@@ -137,7 +150,6 @@ export default function App() {
           break
         case 'Space':
           e.preventDefault()
-          if (state.status === 'playing') sfxEngine.playHardDrop()
           actions.hardDrop()
           break
         case 'KeyC':

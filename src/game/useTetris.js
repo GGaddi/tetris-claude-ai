@@ -41,6 +41,10 @@ function initialState(settings, autoStart = false) {
     status: autoStart ? 'playing' : 'ready',
     countdown: null,
     lastClear: null,
+    // Bumped every time a piece locks into the board, whether from gravity
+    // or a hard drop — lets the UI play a single consistent "lock" sound
+    // for both without needing to know which caused it.
+    lockSeq: 0,
   }
   state = spawnFromQueue(state)
   return state
@@ -76,6 +80,7 @@ function lockPiece(state) {
     lines: newLines,
     level: newLevel,
     lastClear: clearedCount > 0 ? { count: clearedCount, label: LINE_LABELS[clearedCount] } : null,
+    lockSeq: state.lockSeq + 1,
   }
   next = spawnFromQueue(next)
   return next
