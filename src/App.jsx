@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTetris } from './game/useTetris'
-import { DEFAULT_SETTINGS, levelBackground } from './game/constants'
+import { DEFAULT_SETTINGS, levelTheme } from './game/constants'
 import { musicEngine, sfxEngine, announceClear, cancelAnnouncement } from './game/audio'
 import Board from './components/Board'
 import PiecePreview from './components/PiecePreview'
@@ -206,7 +206,14 @@ export default function App() {
           </div>
         </aside>
 
-        <section className="board-wrap" style={{ background: levelBackground(state.level) }}>
+        <section
+          className="board-wrap"
+          style={{
+            background: levelTheme(state.level).frame,
+            '--level-line': levelTheme(state.level).line,
+            '--level-panel': levelTheme(state.level).panel,
+          }}
+        >
           <Board board={state.board} current={state.current} ghostY={state.settings.ghostPieceEnabled ? ghostY : null} />
         </section>
 

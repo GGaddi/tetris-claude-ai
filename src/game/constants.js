@@ -39,24 +39,28 @@ export function computeDropInterval(level, settings) {
   return Math.max(settings.minDropMs, Math.round(interval))
 }
 
-// Dark jewel-tone backgrounds for the play-area frame, cycling once per
-// level so the game visibly shifts mood as the player progresses. Chosen
-// to stay dark enough that the board's own cells/pieces remain the clear
-// focal point — this recolors the frame around the board, not the cells.
-export const LEVEL_BACKGROUNDS = [
-  '#121927', // teal-black (default)
-  '#1a1330', // violet-black
-  '#0f2233', // deep blue
-  '#2a1420', // wine red
-  '#231a0d', // amber-black
-  '#0f2a1c', // forest green
-  '#2a1030', // magenta-black
-  '#1f2205', // olive-gold (kept dark)
-  '#0d2429', // cyan-black
-  '#1a1030', // indigo-black
+// Jewel-tone themes for the play area, cycling once per level so the game
+// visibly shifts mood as the player progresses. Each theme has three tones
+// so the frame, grid lines, and empty-cell background all shift together
+// while staying just dark enough that piece colors remain the clear focal
+// point:
+//   frame  — background of the panel surrounding the board
+//   line   — board background, shows through the 1px gaps between cells
+//   panel  — background of empty (and ghost) cells
+export const LEVEL_THEMES = [
+  { frame: '#173b3c', line: '#1f5a58', panel: '#277572' }, // teal
+  { frame: '#2e2740', line: '#3d3455', panel: '#4a4068' }, // violet (muted plum)
+  { frame: '#132f4d', line: '#1d4870', panel: '#255a8a' }, // deep blue
+  { frame: '#3f2530', line: '#573347', panel: '#6b405a' }, // wine red (muted rose)
+  { frame: '#4a3410', line: '#6b4c16', panel: '#85601c' }, // amber
+  { frame: '#0f4327', line: '#17633a', panel: '#1e7c48' }, // forest green
+  { frame: '#3f2740', line: '#573650', panel: '#6b4464' }, // magenta (muted mauve)
+  { frame: '#3f420f', line: '#5d6116', panel: '#767c1c' }, // olive-gold
+  { frame: '#0f4650', line: '#186876', panel: '#1f8394' }, // cyan
+  { frame: '#232a45', line: '#303a5e', panel: '#3c4775' }, // indigo (muted slate)
 ]
 
-export function levelBackground(level) {
-  const idx = Math.max(0, level - 1) % LEVEL_BACKGROUNDS.length
-  return LEVEL_BACKGROUNDS[idx]
+export function levelTheme(level) {
+  const idx = Math.max(0, level - 1) % LEVEL_THEMES.length
+  return LEVEL_THEMES[idx]
 }
