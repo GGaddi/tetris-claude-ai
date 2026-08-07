@@ -38,3 +38,25 @@ export function computeDropInterval(level, settings) {
   const interval = settings.baseDropMs * Math.pow(settings.speedCurve, level - 1)
   return Math.max(settings.minDropMs, Math.round(interval))
 }
+
+// Dark jewel-tone backgrounds for the play-area frame, cycling once per
+// level so the game visibly shifts mood as the player progresses. Chosen
+// to stay dark enough that the board's own cells/pieces remain the clear
+// focal point — this recolors the frame around the board, not the cells.
+export const LEVEL_BACKGROUNDS = [
+  '#121927', // teal-black (default)
+  '#1a1330', // violet-black
+  '#0f2233', // deep blue
+  '#2a1420', // wine red
+  '#231a0d', // amber-black
+  '#0f2a1c', // forest green
+  '#2a1030', // magenta-black
+  '#1f2205', // olive-gold (kept dark)
+  '#0d2429', // cyan-black
+  '#1a1030', // indigo-black
+]
+
+export function levelBackground(level) {
+  const idx = Math.max(0, level - 1) % LEVEL_BACKGROUNDS.length
+  return LEVEL_BACKGROUNDS[idx]
+}
