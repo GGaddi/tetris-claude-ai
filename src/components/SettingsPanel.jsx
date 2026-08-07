@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SETTINGS_LIMITS } from '../game/constants'
 import { MUSIC_TRACKS } from '../game/audio'
 
@@ -11,6 +11,62 @@ const FIELD_LABELS = {
   speedCurve: 'Speed curve (lower = faster ramp)',
   nextPieceCount: 'Next-piece preview count',
   lockDelayMs: 'Lock delay (ms)',
+}
+
+// A slider paired with a typeable number box. The number box lets the
+// player type multi-digit values without interruption — it only clamps to
+// [min, max] and commits on blur/Enter, not on every keystroke, so partial
+// input (e.g. clearing the field to type a new number) isn't fought with.
+// The slider stays a live, always-in-range mirror of the committed value.
+function NumberSliderField({ label, value, min, max, step, onChange }) {
+  const [text, setText] = useState(String(value))
+
+  // Keep the text box in sync when the value changes from elsewhere (e.g.
+  // the slider being dragged, or the panel re-opening with new settings).
+  useEffect(() => {
+    setText(String(value))
+  }, [value])
+
+  function commit(raw) {
+    let next = Number(raw)
+    if (Number.isNaN(next)) next = min
+    next = Math.min(max, Math.max(min, next))
+    setText(String(next))
+    onChange(next)
+  }
+
+  return (
+    <label className="settings-field">
+      <span className="settings-field-header">
+        <span>{label}</span>
+        <input
+          type="number"
+          className="settings-number-input"
+          min={min}
+          max={max}
+          step={step}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onBlur={(e) => commit(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              commit(e.target.value)
+              e.target.blur()
+            }
+          }}
+        />
+      </span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+    </label>
+  )
 }
 
 export default function SettingsPanel({ settings, onApply, onClose }) {
@@ -28,23 +84,19 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
     <div className="settings-overlay">
       <div className="settings-panel">
         <h2>Rules</h2>
-        <p className="settings-hint">Changes apply on restart, using a fresh board.</p>
+        <p className="settings-hint">Changes apply on restart, using a fresh board. Type a value or drag the slider — out-of-range numbers snap to the nearest limit.</p>
 
         <div className="settings-grid">
           {Object.entries(SETTINGS_LIMITS).map(([key, { min, max, step }]) => (
-            <label key={key} className="settings-field">
-              <span>
-                {FIELD_LABELS[key]} — <strong>{draft[key]}</strong>
-              </span>
-              <input
-                type="range"
-                min={min}
-                max={max}
-                step={step}
-                value={draft[key]}
-                onChange={(e) => setField(key, Number(e.target.value))}
-              />
-            </label>
+            <NumberSliderField
+              key={key}
+              label={FIELD_LABELS[key]}
+              value={draft[key]}
+              min={min}
+              max={max}
+              step={step}
+              onChange={(v) => setField(key, v)}
+            />
           ))}
 
           <label className="settings-field">
@@ -92,19 +144,15 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
         <h3>Scoring</h3>
         <div className="settings-grid">
           {['single', 'double', 'triple', 'tetris'].map((key) => (
-            <label key={key} className="settings-field">
-              <span>
-                {key[0].toUpperCase() + key.slice(1)} clear — <strong>{draft.scoring[key]}</strong>
-              </span>
-              <input
-                type="range"
-                min={0}
-                max={2000}
-                step={50}
-                value={draft.scoring[key]}
-                onChange={(e) => setScoring(key, Number(e.target.value))}
-              />
-            </label>
+            <NumberSliderField
+              key={key}
+              label={`${key[0].toUpperCase() + key.slice(1)} clear`}
+              value={draft.scoring[key]}
+              min={0}
+              max={2000}
+              step={50}
+              onChange={(v) => setScoring(key, v)}
+            />
           ))}
         </div>
 
