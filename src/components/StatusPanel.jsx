@@ -19,7 +19,12 @@ export default function StatusPanel({ score, level, lines, status, lastClear }) 
         </div>
       )}
       {status === 'paused' && <div className="status-flag">Paused</div>}
-      {status === 'gameover' && <div className="status-flag over">Game over</div>}
+      {status === 'gameover' && (
+        <>
+          <div className="status-flag over">Game over</div>
+          <div className="restart-hint">Press Enter to Restart</div>
+        </>
+      )}
     </div>
   )
 }

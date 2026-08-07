@@ -112,6 +112,14 @@ export default function App() {
     actions.updateSettings(newSettings)
   }
 
+  // From the game-over screen, Enter resets the board and jumps straight
+  // into the countdown (skipping the ready/start screen) for a fast
+  // "one more try" loop.
+  function handleRestartFromGameOver() {
+    musicEngine.unlock()
+    actions.restartAndStart()
+  }
+
   useEffect(() => {
     function onKeyDown(e) {
       if (settingsOpen) return
@@ -120,6 +128,9 @@ export default function App() {
         if (state.status === 'ready') {
           e.preventDefault()
           handleStart()
+        } else if (state.status === 'gameover') {
+          e.preventDefault()
+          handleRestartFromGameOver()
         }
         return
       }

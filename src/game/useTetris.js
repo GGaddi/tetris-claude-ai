@@ -171,6 +171,10 @@ function reducer(state, action) {
       return state
     case 'RESTART':
       return initialState(action.settings, false)
+    case 'RESTART_AND_START': {
+      const fresh = initialState(action.settings, false)
+      return { ...fresh, status: 'countdown', countdown: COUNTDOWN_START }
+    }
     case 'UPDATE_SETTINGS':
       return initialState(action.settings, false)
     default:
@@ -212,6 +216,7 @@ export function useTetris(initialSettings) {
   const hold = useCallback(() => dispatch({ type: 'HOLD' }), [])
   const togglePause = useCallback(() => dispatch({ type: 'PAUSE' }), [])
   const restart = useCallback((newSettings) => dispatch({ type: 'RESTART', settings: newSettings || settings }), [settings])
+  const restartAndStart = useCallback((newSettings) => dispatch({ type: 'RESTART_AND_START', settings: newSettings || settings }), [settings])
   const updateSettings = useCallback((newSettings) => dispatch({ type: 'UPDATE_SETTINGS', settings: newSettings }), [])
   const start = useCallback(() => dispatch({ type: 'START' }), [])
 
@@ -226,6 +231,6 @@ export function useTetris(initialSettings) {
     state,
     ghostY,
     nextTypes,
-    actions: { move, rotate, softDrop, hardDrop: hardDrop_, hold, togglePause, restart, updateSettings, start },
+    actions: { move, rotate, softDrop, hardDrop: hardDrop_, hold, togglePause, restart, restartAndStart, updateSettings, start },
   }
 }
