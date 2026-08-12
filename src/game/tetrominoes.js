@@ -1,8 +1,10 @@
 // Each piece is defined on an N x N grid so the same rotate() function
 // works for all of them (classic "rotate the bounding box" approach).
+// Piece colors live in game/skins.js (keyed by skin), not here — this file
+// only defines shapes, since a "skin" recolors/restyles pieces without
+// touching game logic.
 export const TETROMINOES = {
   I: {
-    color: '#5eead4',
     shape: [
       [0, 0, 0, 0],
       [1, 1, 1, 1],
@@ -11,14 +13,12 @@ export const TETROMINOES = {
     ],
   },
   O: {
-    color: '#facc15',
     shape: [
       [1, 1],
       [1, 1],
     ],
   },
   T: {
-    color: '#c084fc',
     shape: [
       [0, 1, 0],
       [1, 1, 1],
@@ -26,7 +26,6 @@ export const TETROMINOES = {
     ],
   },
   S: {
-    color: '#4ade80',
     shape: [
       [0, 1, 1],
       [1, 1, 0],
@@ -34,7 +33,6 @@ export const TETROMINOES = {
     ],
   },
   Z: {
-    color: '#f87171',
     shape: [
       [1, 1, 0],
       [0, 1, 1],
@@ -42,7 +40,6 @@ export const TETROMINOES = {
     ],
   },
   J: {
-    color: '#60a5fa',
     shape: [
       [1, 0, 0],
       [1, 1, 1],
@@ -50,7 +47,6 @@ export const TETROMINOES = {
     ],
   },
   L: {
-    color: '#fb923c',
     shape: [
       [0, 0, 1],
       [1, 1, 1],

@@ -202,7 +202,12 @@ export default function App() {
 
       <main className="layout">
         <aside className="panel left">
-          <PiecePreview type={state.hold} label="Hold" dim={!state.settings.holdEnabled} />
+          <PiecePreview
+            type={state.hold}
+            label="Hold"
+            dim={!state.settings.holdEnabled}
+            skin={state.settings.skin}
+          />
           <div className="controls-hint">
             <h3>Controls</h3>
             <ul>
@@ -218,14 +223,19 @@ export default function App() {
         </aside>
 
         <section
-          className="board-wrap"
+          className={`board-wrap skin-${state.settings.skin}`}
           style={{
             background: levelTheme(state.level).frame,
             '--level-line': levelTheme(state.level).line,
             '--level-panel': levelTheme(state.level).panel,
           }}
         >
-          <Board board={state.board} current={state.current} ghostY={state.settings.ghostPieceEnabled ? ghostY : null} />
+          <Board
+            board={state.board}
+            current={state.current}
+            ghostY={state.settings.ghostPieceEnabled ? ghostY : null}
+            skin={state.settings.skin}
+          />
         </section>
 
         <aside className="panel right">
@@ -261,7 +271,13 @@ export default function App() {
           <div className="next-queue">
             <span className="preview-label">Next</span>
             {nextTypes.map((t, i) => (
-              <PiecePreview key={i} type={t} label={i === 0 ? 'On deck' : `+${i}`} size={14} />
+              <PiecePreview
+                key={i}
+                type={t}
+                label={i === 0 ? 'On deck' : `+${i}`}
+                size={14}
+                skin={state.settings.skin}
+              />
             ))}
           </div>
 

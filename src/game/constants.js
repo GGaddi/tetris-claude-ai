@@ -12,6 +12,7 @@ export const DEFAULT_SETTINGS = {
   holdEnabled: true,
   nextPieceCount: 3,
   music: 'korobeiniki', // 'none' | any key in MUSIC_TRACKS (see game/audio.js)
+  skin: 'modern', // any key in SKINS (see game/skins.js)
   scoring: {
     single: 100,
     double: 300,

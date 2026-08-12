@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
 import { TETROMINOES, rotateMatrix, refillQueue } from './tetrominoes'
+import { getPieceColor } from './skins'
 import { createEmptyBoard, isValidPosition, mergePieceIntoBoard, clearLines, getGhostY } from './board'
 import { computeDropInterval } from './constants'
 
@@ -63,7 +64,7 @@ function tryMove(state, dx, dy) {
 
 function lockPiece(state) {
   const { shape, x, y, type } = state.current
-  const color = TETROMINOES[type].color
+  const color = getPieceColor(state.settings.skin, type)
   const merged = mergePieceIntoBoard(state.board, shape, x, y, color)
   const { board: clearedBoard, clearedCount } = clearLines(merged)
   const scoring = state.settings.scoring

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { SETTINGS_LIMITS } from '../game/constants'
 import { MUSIC_TRACKS } from '../game/audio'
+import { SKINS, SKIN_IDS } from '../game/skins'
 
 const FIELD_LABELS = {
   boardWidth: 'Board width',
@@ -117,6 +118,17 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
               {Object.entries(MUSIC_TRACKS).map(([id, track]) => (
                 <option key={id} value={id}>
                   {track.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="settings-field">
+            <span>Skin</span>
+            <select value={draft.skin} onChange={(e) => setField('skin', e.target.value)}>
+              {SKIN_IDS.map((id) => (
+                <option key={id} value={id}>
+                  {SKINS[id].label}
                 </option>
               ))}
             </select>

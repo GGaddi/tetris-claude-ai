@@ -1,4 +1,6 @@
-export default function Board({ board, current, ghostY, cellSize = 28 }) {
+import { getPieceColor } from '../game/skins'
+
+export default function Board({ board, current, ghostY, skin = 'modern', cellSize = 28 }) {
   const width = board[0].length
   const height = board.length
 
@@ -9,12 +11,12 @@ export default function Board({ board, current, ghostY, cellSize = 28 }) {
     paint(grid, current.shape, current.x, ghostY, null, 'ghost')
   }
   if (current) {
-    paint(grid, current.shape, current.x, current.y, colorOf(current.type), 'active')
+    paint(grid, current.shape, current.x, current.y, getPieceColor(skin, current.type), 'active')
   }
 
   return (
     <div
-      className="board"
+      className={`board skin-${skin}`}
       style={{
         gridTemplateColumns: `repeat(${width}, ${cellSize}px)`,
         gridTemplateRows: `repeat(${height}, ${cellSize}px)`,
@@ -44,17 +46,4 @@ function paint(grid, shape, posX, posY, color, kind) {
       grid[gy][gx] = { color, kind }
     }
   }
-}
-
-function colorOf(type) {
-  const colors = {
-    I: '#5eead4',
-    O: '#facc15',
-    T: '#c084fc',
-    S: '#4ade80',
-    Z: '#f87171',
-    J: '#60a5fa',
-    L: '#fb923c',
-  }
-  return colors[type]
 }

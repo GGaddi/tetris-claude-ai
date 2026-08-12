@@ -1,11 +1,12 @@
 import { TETROMINOES } from '../game/tetrominoes'
+import { getPieceColor } from '../game/skins'
 
-export default function PiecePreview({ type, label, dim = false, size = 16 }) {
+export default function PiecePreview({ type, label, dim = false, size = 16, skin = 'modern' }) {
   const shape = type ? trim(TETROMINOES[type].shape) : null
-  const color = type ? TETROMINOES[type].color : null
+  const color = type ? getPieceColor(skin, type) : null
 
   return (
-    <div className={`preview ${dim ? 'dim' : ''}`}>
+    <div className={`preview skin-${skin} ${dim ? 'dim' : ''}`}>
       <span className="preview-label">{label}</span>
       <div className="preview-grid">
         {shape ? (
