@@ -266,21 +266,9 @@ export default function App() {
           </div>
 
           <div className="panel-actions">
-            {state.status === 'ready' && (
-              <button className="btn primary" onClick={handleStart}>
-                Start
-              </button>
-            )}
-            {state.status === 'countdown' && (
-              <button className="btn primary" disabled>
-                Starting in {state.countdown}&hellip;
-              </button>
-            )}
-            {(state.status === 'playing' || state.status === 'paused' || state.status === 'gameover') && (
-              <button className="btn primary" onClick={() => actions.togglePause()}>
-                {state.status === 'paused' ? 'Resume' : 'Pause'}
-              </button>
-            )}
+            <button className="btn primary" onClick={() => actions.togglePause()}>
+              {state.status === 'paused' ? 'Resume' : 'Pause'}
+            </button>
             <button className="btn ghost" onClick={() => actions.restart()}>
               Restart
             </button>
