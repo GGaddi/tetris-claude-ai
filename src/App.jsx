@@ -202,12 +202,7 @@ export default function App() {
 
       <main className="layout">
         <aside className="panel left">
-          <PiecePreview
-            type={state.hold}
-            label="Hold"
-            dim={!state.settings.holdEnabled}
-            skin={state.settings.skin}
-          />
+          {state.settings.holdEnabled && <PiecePreview type={state.hold} label="Hold" />}
           <div className="controls-hint">
             <h3>Controls</h3>
             <ul>
@@ -216,26 +211,21 @@ export default function App() {
               <li><kbd>Space</kbd> hard drop</li>
               <li><kbd>&uarr;</kbd> / <kbd>X</kbd> rotate CW</li>
               <li><kbd>Z</kbd> rotate CCW</li>
-              <li><kbd>C</kbd> hold</li>
+              {state.settings.holdEnabled && <li><kbd>C</kbd> hold</li>}
               <li><kbd>P</kbd> pause &nbsp; <kbd>R</kbd> restart</li>
             </ul>
           </div>
         </aside>
 
         <section
-          className={`board-wrap skin-${state.settings.skin}`}
+          className="board-wrap"
           style={{
             background: levelTheme(state.level).frame,
             '--level-line': levelTheme(state.level).line,
             '--level-panel': levelTheme(state.level).panel,
           }}
         >
-          <Board
-            board={state.board}
-            current={state.current}
-            ghostY={state.settings.ghostPieceEnabled ? ghostY : null}
-            skin={state.settings.skin}
-          />
+          <Board board={state.board} current={state.current} ghostY={state.settings.ghostPieceEnabled ? ghostY : null} />
         </section>
 
         <aside className="panel right">
@@ -271,13 +261,7 @@ export default function App() {
           <div className="next-queue">
             <span className="preview-label">Next</span>
             {nextTypes.map((t, i) => (
-              <PiecePreview
-                key={i}
-                type={t}
-                label={i === 0 ? 'On deck' : `+${i}`}
-                size={14}
-                skin={state.settings.skin}
-              />
+              <PiecePreview key={i} type={t} label={i === 0 ? 'On deck' : `+${i}`} size={14} />
             ))}
           </div>
 
@@ -316,6 +300,9 @@ export default function App() {
             <p>Press <kbd>Enter</kbd> or click Start to begin</p>
             <button className="btn primary" onClick={handleStart}>
               Start
+            </button>
+            <button className="btn ghost" onClick={() => setSettingsOpen(true)}>
+              Rules
             </button>
           </div>
         </div>

@@ -83,16 +83,16 @@ body {
   padding: 10px;
   background: var(--bg-raised);
   border: 1px solid var(--line);
-  border-radius: var(--skin-wrap-radius, 10px);
+  border-radius: 10px;
   box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.04), 0 20px 60px rgba(0, 0, 0, 0.45);
-  transition: background 0.8s ease, border-radius 0.2s ease;
+  transition: background 0.8s ease;
 }
 
 .board {
   display: grid;
-  gap: var(--skin-gap, 1px);
+  gap: 1px;
   background: var(--level-line, var(--line));
-  border-radius: var(--skin-radius, 4px);
+  border-radius: 4px;
   overflow: hidden;
   transition: background 0.8s ease;
 }
@@ -104,59 +104,13 @@ body {
 .cell.locked,
 .cell.active {
   background: var(--cell-color);
-  box-shadow: var(--skin-cell-shadow, inset 0 0 0 2px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(255, 255, 255, 0.15));
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(255, 255, 255, 0.15);
 }
 
 .cell.ghost {
   background: var(--level-panel, var(--bg-panel));
   box-shadow: inset 0 0 0 2px var(--text-dim);
   opacity: 0.5;
-}
-
-/* --- Skins ---------------------------------------------------------------
-   Each skin sets the CSS custom properties the rules above (and the
-   preview-cell rules below) read from. Add a new skin by adding a
-   `.skin-<id>` block here plus an entry in game/skins.js.
-   - Modern: the original soft, glossy bevel (blurred inset shadow, small
-     rounded corners, tight 1px grid).
-   - Retro: hard-edged pixel-highlight bevel (no blur), square corners, and
-     a chunkier 2px grid for an 8-bit look. */
-.board.skin-modern,
-.preview.skin-modern {
-  --skin-radius: 4px;
-  --skin-cell-radius: 2px;
-  --skin-gap: 1px;
-  --skin-cell-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25), inset 0 0 10px rgba(255, 255, 255, 0.15);
-}
-
-.board.skin-blocky,
-.preview.skin-blocky {
-  --skin-radius: 0px;
-  --skin-cell-radius: 0px;
-  --skin-gap: 2px;
-  --skin-cell-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.45), inset 3px 3px 0 rgba(255, 255, 255, 0.4);
-}
-
-.board.skin-classic,
-.preview.skin-classic {
-  --skin-radius: 0px;
-  --skin-cell-radius: 0px;
-  --skin-gap: 1px;
-  /* Flat and thin — a plain dark outline with no light/dark bevel corner,
-     since the dot-matrix screen it's nodding to had no highlight to fake. */
-  --skin-cell-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.55);
-}
-
-.board-wrap.skin-modern {
-  --skin-wrap-radius: 10px;
-}
-
-.board-wrap.skin-blocky {
-  --skin-wrap-radius: 0px;
-}
-
-.board-wrap.skin-classic {
-  --skin-wrap-radius: 0px;
 }
 
 .status-panel,
@@ -310,13 +264,12 @@ kbd {
 .preview-cell {
   width: 16px;
   height: 16px;
-  border-radius: var(--skin-cell-radius, 2px);
+  border-radius: 2px;
   background: transparent;
 }
 
 .preview-cell[style] {
   background: var(--cell-color);
-  box-shadow: var(--skin-cell-shadow, none);
 }
 
 .preview-empty {
@@ -526,6 +479,10 @@ kbd {
 
 .start-panel .btn {
   width: 100%;
+}
+
+.start-panel .btn + .btn {
+  margin-top: 10px;
 }
 
 .countdown-number {
