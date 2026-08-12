@@ -15,13 +15,15 @@ export default function PiecePreview({ type, label, dim = false, size = 16, skin
             style={{ gridTemplateColumns: `repeat(${shape[0].length}, ${size}px)` }}
           >
             {shape.flatMap((row, y) =>
-              row.map((v, x) => (
-                <div
-                  key={`${x}-${y}`}
-                  className="preview-cell"
-                  style={v ? { '--cell-color': color } : undefined}
-                />
-              ))
+              row.map((v, x) =>
+                v ? (
+                  <div
+                    key={`${x}-${y}`}
+                    className="preview-cell"
+                    style={{ '--cell-color': color, gridColumn: x + 1, gridRow: y + 1 }}
+                  />
+                ) : null
+              )
             )}
           </div>
         ) : (
