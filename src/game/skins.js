@@ -31,17 +31,19 @@ export const SKINS = {
   },
   classic: {
     label: 'Classic (Game Boy)',
-    // Seven shades of grey spanning near-white to near-black, spaced far
-    // enough apart to stay tell-apart-able on a screen with no color at
-    // all — same constraint the original dot-matrix palette had.
+    // Seven shades of grey, kept inside a mid-range band (not true white
+    // or true black) so every piece stays visible against the app's dark
+    // panels — especially the preview cards, which have no light backdrop
+    // behind the cell. A visible outline (see .skin-classic rules in
+    // App.css) backs this up further.
     colors: {
-      I: '#e8e8e8',
-      O: '#c2c2c2',
+      I: '#dcdcdc',
+      O: '#bcbcbc',
       T: '#9c9c9c',
-      S: '#767676',
-      Z: '#565656',
-      J: '#3a3a3a',
-      L: '#212121',
+      S: '#7e7e7e',
+      Z: '#626262',
+      J: '#4a4a4a',
+      L: '#363636',
     },
   },
 }

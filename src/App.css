@@ -113,6 +113,51 @@ body {
   opacity: 0.5;
 }
 
+/* Classic (Game Boy) skin is monochrome, so give every filled cell a thin
+   light outline in addition to its fill color — without it, the darkest
+   shades blend into the dark app background, and the lightest shades have
+   little separation from a bright cell next to them. */
+.skin-classic .cell.locked,
+.skin-classic .cell.active {
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.35), inset 0 0 8px rgba(255, 255, 255, 0.12),
+    0 0 0 1px rgba(231, 236, 245, 0.35);
+}
+
+.skin-classic .preview-cell[style] {
+  box-shadow: 0 0 0 1px rgba(231, 236, 245, 0.35);
+}
+
+/* Blocky skin: hard pixel-art edges instead of Modern's soft rounded
+   bevel — square corners, a hard two-tone highlight/shadow (like old
+   sprite shading) instead of a soft inset glow, and an inset border that
+   matches the board's grid-line color to fake a thicker gap between
+   blocks. Deliberately does NOT touch `gap` on `.board`/`.preview-shape` —
+   changing that would resize the grid and pieces, not just restyle them,
+   so cell size and layout stay identical across every skin. */
+.skin-blocky .cell {
+  border-radius: 0;
+}
+
+.skin-blocky .cell.locked,
+.skin-blocky .cell.active {
+  box-shadow: inset 3px 3px 0 rgba(255, 255, 255, 0.45), inset -3px -3px 0 rgba(0, 0, 0, 0.45),
+    inset 0 0 0 2px var(--level-line, var(--line));
+}
+
+.skin-blocky .cell.ghost {
+  border-radius: 0;
+  box-shadow: inset 0 0 0 2px var(--text-dim);
+}
+
+.skin-blocky .preview-cell {
+  border-radius: 0;
+}
+
+.skin-blocky .preview-cell[style] {
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.45), inset -2px -2px 0 rgba(0, 0, 0, 0.45),
+    inset 0 0 0 2px var(--bg-panel);
+}
+
 .status-panel,
 .controls-hint,
 .next-queue {
