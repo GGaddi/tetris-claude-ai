@@ -158,6 +158,36 @@ body {
     inset 0 0 0 2px var(--bg-panel);
 }
 
+/* Circular skin: same cell size and grid gap as every other skin — only
+   the shape changes. Deliberately painted with a radial-gradient circle
+   layered over a panel-colored base, rather than achieved via
+   border-radius clipping: clipping a square div to a circle reveals
+   whatever sits behind it (the board's darker grid-line background),
+   which showed up as a dark square peeking out from each piece's
+   corners. Painting the corners with the same color as an empty cell
+   avoids that mismatch entirely. */
+.skin-circular .cell.locked,
+.skin-circular .cell.active {
+  border-radius: 0;
+  background: radial-gradient(circle closest-side, var(--cell-color) 99%, transparent 100%),
+    var(--level-panel, var(--bg-panel));
+  box-shadow: none;
+}
+
+.skin-circular .cell.ghost {
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--text-dim);
+}
+
+.skin-circular .preview-cell {
+  border-radius: 0;
+}
+
+.skin-circular .preview-cell[style] {
+  background: radial-gradient(circle closest-side, var(--cell-color) 99%, transparent 100%), var(--bg-panel);
+  box-shadow: none;
+}
+
 .status-panel,
 .controls-hint,
 .next-queue {

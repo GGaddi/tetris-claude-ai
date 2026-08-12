@@ -46,6 +46,22 @@ export const SKINS = {
       L: '#363636',
     },
   },
+  circular: {
+    label: 'Circular',
+    // Soft bubble-like palette. The shape change (square -> circle) is
+    // handled entirely in CSS (see `.skin-circular` rules in App.css) —
+    // this skin doesn't need its own cell size or gap, same as every
+    // other skin.
+    colors: {
+      I: '#7dd3fc',
+      O: '#fde68a',
+      T: '#d8b4fe',
+      S: '#86efac',
+      Z: '#fca5a5',
+      J: '#93c5fd',
+      L: '#fdba74',
+    },
+  },
 }
 
 export const SKIN_IDS = Object.keys(SKINS)
