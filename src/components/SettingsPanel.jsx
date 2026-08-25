@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { SETTINGS_LIMITS } from '../game/constants'
-import { MUSIC_TRACKS } from '../game/audio'
+import { MUSIC_TRACKS } from '../game/musicTracks'
 import { SKINS, SKIN_IDS } from '../game/skins'
 
 const FIELD_LABELS = {

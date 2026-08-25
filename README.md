@@ -48,6 +48,8 @@ adjustable there (changes apply on restart):
 - Hold piece on/off
 - Lock delay
 - Points awarded for single/double/triple/tetris line clears
+- Background music track (or none)
+- Visual skin (Modern, Blocky, Classic Game Boy, Circular)
 
 Defaults live in `src/game/constants.js` (`DEFAULT_SETTINGS` and
 `SETTINGS_LIMITS`) if you'd rather change the out-of-the-box values or the
@@ -58,17 +60,25 @@ min/max sliders allow.
 ```
 src/
   game/
-    constants.js     # default settings + slider limits
-    tetrominoes.js    # piece shapes, colors, rotation, bag randomizer
-    board.js           # board creation, collision, merging, line clears
-    useTetris.js        # game engine: React hook wrapping a reducer + gravity loop
+    constants.js       # default settings, slider limits, per-level color themes
+    tetrominoes.js      # piece shapes, rotation, bag randomizer
+    board.js             # board creation, collision, merging, line clears
+    skins.js              # skin definitions: piece colors per skin
+    useTetris.js           # game engine: React hook wrapping a reducer + gravity loop
+    audioContext.js         # shared Web Audio API context
+    notes.js                 # note-name -> frequency helper
+    musicTracks.js            # background music track data
+    musicEngine.js              # background music playback engine
+    sfxEngine.js                 # sound effects + line-clear fanfare engine
+    announcer.js                  # speech-synthesis line-clear announcer
   components/
-    Board.jsx          # renders the playfield grid
-    PiecePreview.jsx    # mini preview used for Hold + Next queue
-    StatusPanel.jsx     # score / level / lines
-    SettingsPanel.jsx    # the Rules editor
-  App.jsx               # layout + keyboard input
-  App.css                # visual styling
+    Board.jsx               # renders the playfield grid
+    PiecePreview.jsx         # mini preview used for Hold + Next queue
+    StatusPanel.jsx           # score / level / lines
+    SettingsPanel.jsx          # the Rules editor
+    VolumeControl.jsx           # mute toggle + volume slider (music and sfx channels)
+  App.jsx                   # layout + keyboard input
+  App.css                    # visual styling
 ```
 
 ## Notes on the engine
@@ -80,3 +90,6 @@ src/
   is the classic NES-style unweighted roll.
 - Gravity runs on a `setInterval` timer whose speed is derived from
   `baseDropMs * speedCurve^(level-1)`, floored at `minDropMs`.
+- All audio is procedurally generated in the browser via the Web Audio
+  API (music + sound effects) and the SpeechSynthesis API (line-clear
+  announcer) — no audio files are loaded, so it works fully offline.
