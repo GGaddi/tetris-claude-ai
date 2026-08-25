@@ -225,6 +225,9 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 0.85rem;
+}
+
+.clear-badge.active {
   animation: pop 0.4s ease;
 }
 

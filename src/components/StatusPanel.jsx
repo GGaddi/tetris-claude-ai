@@ -13,11 +13,9 @@ export default function StatusPanel({ score, level, lines, status, lastClear }) 
         <span className="stat-label">Lines</span>
         <span className="stat-value">{lines}</span>
       </div>
-      {lastClear && (
-        <div className="clear-badge" key={lines}>
-          {lastClear.label}!
-        </div>
-      )}
+      <div className={`clear-badge ${lastClear ? 'active' : ''}`} key={lines}>
+        {lastClear ? `${lastClear.label}!` : '\u00A0'}
+      </div>
       {status === 'paused' && <div className="status-flag">Paused</div>}
       {status === 'gameover' && (
         <>
