@@ -21,7 +21,8 @@ export const DEFAULT_SETTINGS = {
     softDropPerCell: 1,
     hardDropPerCell: 2,
   },
-  lockDelayMs: 500, // grace period after landing before a piece locks
+  lockDelayEnabled: false, // off by default — a landed piece locks instantly, matching prior behavior
+  lockDelayMs: 500, // grace period after landing before a piece locks, only used when lockDelayEnabled is true
 }
 
 export const SETTINGS_LIMITS = {

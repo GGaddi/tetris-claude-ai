@@ -512,6 +512,14 @@ kbd {
   accent-color: var(--accent);
 }
 
+/* Disabled state for the number/range pair — used when a rule's toggle
+   (e.g. Lock delay) is off, so its slider is greyed out and inert rather
+   than adjusting a value that isn't currently in effect. */
+.settings-field input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .settings-actions {
   margin-top: 24px;
   display: flex;

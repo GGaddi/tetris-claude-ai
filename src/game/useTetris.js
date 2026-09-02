@@ -156,6 +156,22 @@ function reducer(state, action) {
       if (isValidPosition(state.board, shape, x, y + 1)) {
         return { ...state, current: { ...state.current, y: y + 1 } }
       }
+      // Piece has landed. With lock delay off, lock immediately (prior
+      // behavior). With it on, hold here — the lock-delay timeout effect
+      // in useTetris (keyed on state.current) locks it after the grace
+      // period, and re-arms itself on every move/rotate/drop since each
+      // of those produces a new `current` object.
+      if (state.settings.lockDelayEnabled) return state
+      return lockPiece(state)
+    }
+    case 'LOCK_NOW': {
+      // Fired when a lock-delay timeout elapses. Re-check groundedness in
+      // case the piece moved since the timer was scheduled — the effect
+      // that schedules this clears stale timers on change, but this is a
+      // cheap extra guard against any race.
+      if (!state.current || state.status !== 'playing') return state
+      const { shape, x, y } = state.current
+      if (isValidPosition(state.board, shape, x, y + 1)) return state
       return lockPiece(state)
     }
     case 'HARD_DROP':
@@ -199,6 +215,27 @@ export function useTetris(initialSettings) {
     return () => clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.status, state.level, state.current?.type, softDropHeld.current])
+
+  // Lock delay: once a piece can't move down any further, give the player
+  // `lockDelayMs` before it actually locks (only when the rule is turned
+  // on — off by default, which preserves the old instant-lock behavior).
+  // This is re-keyed on `state.current` — a new object every move,
+  // rotation, or gravity step — and on `state.board`, which only changes
+  // when a piece locks. That means any input while grounded tears down
+  // the pending timeout and schedules a fresh one, which is exactly what
+  // "resets the lock delay" means, without a separate reducer action for
+  // it. Note there's no cap on resets, so a piece can in principle be
+  // shuffled indefinitely at the bottom without locking — acceptable for
+  // this project, but worth knowing if that ever needs tightening.
+  useEffect(() => {
+    if (!settings.lockDelayEnabled) return undefined
+    if (state.status !== 'playing' || !state.current) return undefined
+    const { shape, x, y } = state.current
+    const grounded = !isValidPosition(state.board, shape, x, y + 1)
+    if (!grounded) return undefined
+    const id = setTimeout(() => dispatch({ type: 'LOCK_NOW' }), settings.lockDelayMs)
+    return () => clearTimeout(id)
+  }, [state.current, state.board, state.status, settings.lockDelayEnabled, settings.lockDelayMs])
 
   // Pre-game countdown, ticks once per second down to 0 then flips to 'playing'
   useEffect(() => {

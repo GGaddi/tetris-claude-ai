@@ -19,7 +19,7 @@ const FIELD_LABELS = {
 // [min, max] and commits on blur/Enter, not on every keystroke, so partial
 // input (e.g. clearing the field to type a new number) isn't fought with.
 // The slider stays a live, always-in-range mirror of the committed value.
-function NumberSliderField({ label, value, min, max, step, onChange }) {
+function NumberSliderField({ label, value, min, max, step, onChange, disabled = false }) {
   const [text, setText] = useState(String(value))
 
   // Keep the text box in sync when the value changes from elsewhere (e.g.
@@ -47,6 +47,7 @@ function NumberSliderField({ label, value, min, max, step, onChange }) {
           max={max}
           step={step}
           value={text}
+          disabled={disabled}
           onChange={(e) => setText(e.target.value)}
           onBlur={(e) => commit(e.target.value)}
           onKeyDown={(e) => {
@@ -64,6 +65,7 @@ function NumberSliderField({ label, value, min, max, step, onChange }) {
         max={max}
         step={step}
         value={value}
+        disabled={disabled}
         onChange={(e) => onChange(Number(e.target.value))}
       />
     </label>
@@ -97,6 +99,7 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
               max={max}
               step={step}
               onChange={(v) => setField(key, v)}
+              disabled={key === 'lockDelayMs' && !draft.lockDelayEnabled}
             />
           ))}
 
@@ -149,6 +152,15 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
               type="checkbox"
               checked={draft.holdEnabled}
               onChange={(e) => setField('holdEnabled', e.target.checked)}
+            />
+          </label>
+
+          <label className="settings-field toggle">
+            <span>Lock delay</span>
+            <input
+              type="checkbox"
+              checked={draft.lockDelayEnabled}
+              onChange={(e) => setField('lockDelayEnabled', e.target.checked)}
             />
           </label>
         </div>
