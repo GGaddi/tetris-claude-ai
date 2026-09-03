@@ -90,18 +90,39 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
         <p className="settings-hint">Changes apply on restart, using a fresh board. Type a value or drag the slider — out-of-range numbers snap to the nearest limit.</p>
 
         <div className="settings-grid">
-          {Object.entries(SETTINGS_LIMITS).map(([key, { min, max, step }]) => (
+          {Object.entries(SETTINGS_LIMITS)
+            .filter(([key]) => key !== 'lockDelayMs')
+            .map(([key, { min, max, step }]) => (
+              <NumberSliderField
+                key={key}
+                label={FIELD_LABELS[key]}
+                value={draft[key]}
+                min={min}
+                max={max}
+                step={step}
+                onChange={(v) => setField(key, v)}
+              />
+            ))}
+
+          <div className="settings-field">
+            <span className="settings-field-header">
+              <span>Lock delay</span>
+              <input
+                type="checkbox"
+                checked={draft.lockDelayEnabled}
+                onChange={(e) => setField('lockDelayEnabled', e.target.checked)}
+              />
+            </span>
             <NumberSliderField
-              key={key}
-              label={FIELD_LABELS[key]}
-              value={draft[key]}
-              min={min}
-              max={max}
-              step={step}
-              onChange={(v) => setField(key, v)}
-              disabled={key === 'lockDelayMs' && !draft.lockDelayEnabled}
+              label={FIELD_LABELS.lockDelayMs}
+              value={draft.lockDelayMs}
+              min={SETTINGS_LIMITS.lockDelayMs.min}
+              max={SETTINGS_LIMITS.lockDelayMs.max}
+              step={SETTINGS_LIMITS.lockDelayMs.step}
+              onChange={(v) => setField('lockDelayMs', v)}
+              disabled={!draft.lockDelayEnabled}
             />
-          ))}
+          </div>
 
           <label className="settings-field">
             <span>Randomizer</span>
@@ -152,15 +173,6 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
               type="checkbox"
               checked={draft.holdEnabled}
               onChange={(e) => setField('holdEnabled', e.target.checked)}
-            />
-          </label>
-
-          <label className="settings-field toggle">
-            <span>Lock delay</span>
-            <input
-              type="checkbox"
-              checked={draft.lockDelayEnabled}
-              onChange={(e) => setField('lockDelayEnabled', e.target.checked)}
             />
           </label>
 
