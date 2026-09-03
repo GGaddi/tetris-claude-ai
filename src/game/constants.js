@@ -23,6 +23,7 @@ export const DEFAULT_SETTINGS = {
   },
   lockDelayEnabled: false, // off by default — a landed piece locks instantly, matching prior behavior
   lockDelayMs: 500, // grace period after landing before a piece locks, only used when lockDelayEnabled is true
+  countdownEnabled: true, // on by default — the 3-2-1 pre-game countdown; off skips straight to 'playing'
 }
 
 export const SETTINGS_LIMITS = {

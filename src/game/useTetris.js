@@ -133,7 +133,12 @@ function holdPiece(state) {
 function reducer(state, action) {
   switch (action.type) {
     case 'START':
-      if (state.status === 'ready') return { ...state, status: 'countdown', countdown: COUNTDOWN_START }
+      if (state.status === 'ready') {
+        if (state.settings.countdownEnabled) {
+          return { ...state, status: 'countdown', countdown: COUNTDOWN_START }
+        }
+        return { ...state, status: 'playing' }
+      }
       return state
     case 'COUNTDOWN_TICK': {
       if (state.status !== 'countdown') return state
@@ -190,7 +195,10 @@ function reducer(state, action) {
       return initialState(action.settings, false)
     case 'RESTART_AND_START': {
       const fresh = initialState(action.settings, false)
-      return { ...fresh, status: 'countdown', countdown: COUNTDOWN_START }
+      if (fresh.settings.countdownEnabled) {
+        return { ...fresh, status: 'countdown', countdown: COUNTDOWN_START }
+      }
+      return { ...fresh, status: 'playing' }
     }
     case 'UPDATE_SETTINGS':
       return initialState(action.settings, false)

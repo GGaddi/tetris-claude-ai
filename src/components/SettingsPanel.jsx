@@ -163,6 +163,15 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
               onChange={(e) => setField('lockDelayEnabled', e.target.checked)}
             />
           </label>
+
+          <label className="settings-field toggle">
+            <span>Countdown</span>
+            <input
+              type="checkbox"
+              checked={draft.countdownEnabled}
+              onChange={(e) => setField('countdownEnabled', e.target.checked)}
+            />
+          </label>
         </div>
 
         <h3>Scoring</h3>
