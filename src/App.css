@@ -407,10 +407,36 @@ kbd {
   background: var(--bg-raised);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 28px;
   width: min(640px, 100%);
   max-height: 86vh;
   overflow-y: auto;
+}
+
+.settings-panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--bg-raised);
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-panel-header h2 {
+  margin: 0;
+}
+
+/* Reused for the top action bar too — no margin-top needed there since
+   it already sits flush against the header's own padding. */
+.settings-panel-header .settings-actions {
+  margin-top: 0;
+}
+
+.settings-panel-body {
+  padding: 20px 28px 28px;
 }
 
 .settings-panel h2 {

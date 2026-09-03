@@ -86,134 +86,138 @@ export default function SettingsPanel({ settings, onApply, onClose }) {
   return (
     <div className="settings-overlay">
       <div className="settings-panel">
-        <h2>Rules</h2>
-        <p className="settings-hint">Changes apply on restart, using a fresh board. Type a value or drag the slider — out-of-range numbers snap to the nearest limit.</p>
+        <div className="settings-panel-header">
+          <h2>Rules</h2>
+          <div className="settings-actions">
+            <button className="btn ghost" onClick={onClose}>
+              Cancel
+            </button>
+            <button
+              className="btn primary"
+              onClick={() => {
+                onApply(draft)
+                onClose()
+              }}
+            >
+              Apply &amp; restart
+            </button>
+          </div>
+        </div>
 
-        <div className="settings-grid">
-          {Object.entries(SETTINGS_LIMITS)
-            .filter(([key]) => key !== 'lockDelayMs')
-            .map(([key, { min, max, step }]) => (
+        <div className="settings-panel-body">
+          <p className="settings-hint">Changes apply on restart, using a fresh board. Type a value or drag the slider — out-of-range numbers snap to the nearest limit.</p>
+
+          <div className="settings-grid">
+            {Object.entries(SETTINGS_LIMITS)
+              .filter(([key]) => key !== 'lockDelayMs')
+              .map(([key, { min, max, step }]) => (
+                <NumberSliderField
+                  key={key}
+                  label={FIELD_LABELS[key]}
+                  value={draft[key]}
+                  min={min}
+                  max={max}
+                  step={step}
+                  onChange={(v) => setField(key, v)}
+                />
+              ))}
+
+            <div className="settings-field">
+              <span className="settings-field-header">
+                <span>Lock delay</span>
+                <input
+                  type="checkbox"
+                  checked={draft.lockDelayEnabled}
+                  onChange={(e) => setField('lockDelayEnabled', e.target.checked)}
+                />
+              </span>
               <NumberSliderField
-                key={key}
-                label={FIELD_LABELS[key]}
-                value={draft[key]}
-                min={min}
-                max={max}
-                step={step}
-                onChange={(v) => setField(key, v)}
+                label={FIELD_LABELS.lockDelayMs}
+                value={draft.lockDelayMs}
+                min={SETTINGS_LIMITS.lockDelayMs.min}
+                max={SETTINGS_LIMITS.lockDelayMs.max}
+                step={SETTINGS_LIMITS.lockDelayMs.step}
+                onChange={(v) => setField('lockDelayMs', v)}
+                disabled={!draft.lockDelayEnabled}
               />
-            ))}
+            </div>
 
-          <div className="settings-field">
-            <span className="settings-field-header">
-              <span>Lock delay</span>
+            <label className="settings-field">
+              <span>Randomizer</span>
+              <select
+                value={draft.randomizer}
+                onChange={(e) => setField('randomizer', e.target.value)}
+              >
+                <option value="bag">7-bag (fair)</option>
+                <option value="random">Fully random</option>
+              </select>
+            </label>
+
+            <label className="settings-field">
+              <span>Music</span>
+              <select value={draft.music} onChange={(e) => setField('music', e.target.value)}>
+                <option value="none">None</option>
+                {Object.entries(MUSIC_TRACKS).map(([id, track]) => (
+                  <option key={id} value={id}>
+                    {track.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="settings-field">
+              <span>Skin</span>
+              <select value={draft.skin} onChange={(e) => setField('skin', e.target.value)}>
+                {SKIN_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {SKINS[id].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="settings-field toggle">
+              <span>Ghost piece</span>
               <input
                 type="checkbox"
-                checked={draft.lockDelayEnabled}
-                onChange={(e) => setField('lockDelayEnabled', e.target.checked)}
+                checked={draft.ghostPieceEnabled}
+                onChange={(e) => setField('ghostPieceEnabled', e.target.checked)}
               />
-            </span>
-            <NumberSliderField
-              label={FIELD_LABELS.lockDelayMs}
-              value={draft.lockDelayMs}
-              min={SETTINGS_LIMITS.lockDelayMs.min}
-              max={SETTINGS_LIMITS.lockDelayMs.max}
-              step={SETTINGS_LIMITS.lockDelayMs.step}
-              onChange={(v) => setField('lockDelayMs', v)}
-              disabled={!draft.lockDelayEnabled}
-            />
+            </label>
+
+            <label className="settings-field toggle">
+              <span>Hold piece</span>
+              <input
+                type="checkbox"
+                checked={draft.holdEnabled}
+                onChange={(e) => setField('holdEnabled', e.target.checked)}
+              />
+            </label>
+
+            <label className="settings-field toggle">
+              <span>Countdown</span>
+              <input
+                type="checkbox"
+                checked={draft.countdownEnabled}
+                onChange={(e) => setField('countdownEnabled', e.target.checked)}
+              />
+            </label>
           </div>
 
-          <label className="settings-field">
-            <span>Randomizer</span>
-            <select
-              value={draft.randomizer}
-              onChange={(e) => setField('randomizer', e.target.value)}
-            >
-              <option value="bag">7-bag (fair)</option>
-              <option value="random">Fully random</option>
-            </select>
-          </label>
-
-          <label className="settings-field">
-            <span>Music</span>
-            <select value={draft.music} onChange={(e) => setField('music', e.target.value)}>
-              <option value="none">None</option>
-              {Object.entries(MUSIC_TRACKS).map(([id, track]) => (
-                <option key={id} value={id}>
-                  {track.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="settings-field">
-            <span>Skin</span>
-            <select value={draft.skin} onChange={(e) => setField('skin', e.target.value)}>
-              {SKIN_IDS.map((id) => (
-                <option key={id} value={id}>
-                  {SKINS[id].label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="settings-field toggle">
-            <span>Ghost piece</span>
-            <input
-              type="checkbox"
-              checked={draft.ghostPieceEnabled}
-              onChange={(e) => setField('ghostPieceEnabled', e.target.checked)}
-            />
-          </label>
-
-          <label className="settings-field toggle">
-            <span>Hold piece</span>
-            <input
-              type="checkbox"
-              checked={draft.holdEnabled}
-              onChange={(e) => setField('holdEnabled', e.target.checked)}
-            />
-          </label>
-
-          <label className="settings-field toggle">
-            <span>Countdown</span>
-            <input
-              type="checkbox"
-              checked={draft.countdownEnabled}
-              onChange={(e) => setField('countdownEnabled', e.target.checked)}
-            />
-          </label>
-        </div>
-
-        <h3>Scoring</h3>
-        <div className="settings-grid">
-          {['single', 'double', 'triple', 'tetris'].map((key) => (
-            <NumberSliderField
-              key={key}
-              label={`${key[0].toUpperCase() + key.slice(1)} clear`}
-              value={draft.scoring[key]}
-              min={0}
-              max={2000}
-              step={50}
-              onChange={(v) => setScoring(key, v)}
-            />
-          ))}
-        </div>
-
-        <div className="settings-actions">
-          <button className="btn ghost" onClick={onClose}>
-            Cancel
-          </button>
-          <button
-            className="btn primary"
-            onClick={() => {
-              onApply(draft)
-              onClose()
-            }}
-          >
-            Apply &amp; restart
-          </button>
+          <h3>Scoring</h3>
+          <div className="settings-grid">
+            {['single', 'double', 'triple', 'tetris'].map((key) => (
+              <NumberSliderField
+                key={key}
+                label={`${key[0].toUpperCase() + key.slice(1)} clear`}
+                value={draft.scoring[key]}
+                min={0}
+                max={2000}
+                step={50}
+                onChange={(v) => setScoring(key, v)}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
